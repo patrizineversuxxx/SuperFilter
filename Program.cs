@@ -76,7 +76,8 @@ namespace SuperFilter
                 {
                     Color[] colors = new Color[fullSize];
                     int [,] r = new int[N,N];
-                    double [,] h = new double[N,N];
+                    double [,] h = new double[image.Width,image.Height];
+                    double[] H = new double[size];
                     
                     int left = x - size;
                     int right = x + size;
@@ -93,27 +94,22 @@ namespace SuperFilter
                         {
                             colors[n] = image.GetPixel(i, j);
                             r[i, j] = (int)Math.Sqrt(Math.Pow(i - (N + 1) / 2, 2) + Math.Pow(j - (N + 1) / 2, 2));
-                            h[i, j] = Math.Exp(-c * w) / Math.PI *
+                            
+                            H[r[i,j]] = Math.Exp(-c * w) / Math.PI *
                                       (Math.Sin(w * r[i, j]) / r[i, j] +
                                        2 * Math.Cos(w * r[i, j]) / (Math.Pow(r[i, j], 2) * w) +
                                        2 * Math.Sin((w * r[i, j])) / (Math.Pow(r[i, j], 3) * Math.Pow(w, 2)) +
                                        (c * Math.Cos(w * r[i, j]) - Math.Sin((w * r[i, j]))) /
                                        (Math.Pow(c, 2) + Math.Pow(r[i, j], 2)));
-                            
-                            n++;
+                            h[i, j] = H[r[i,j]];
+                            h[x, y] += h[i, j];
                         }
                     }
+                    double keek = h[x,y]-h[left+size,up+size];
+                    h[x,y]*=1 / (2 * keek);
+                    Color result = Color.FromArgb(255,(int)h[x,y]*colors[fullSize/2].R,(int)h[x,y]*colors[fullSize/2].G, (int)h[x,y]*colors[fullSize/2].B);
 
-                    //
-
-                    /*Color result = Color.FromArgb(
-                        255,
-                        colors.OrderBy(c => c.R).ElementAt(fullSize / 2).R,
-                        colors.OrderBy(c => c.G).ElementAt(fullSize / 2).G,
-                        colors.OrderBy(c => c.B).ElementAt(fullSize / 2).B
-                    );*/
-
-                    //outBitmapLock.SetPixel(x, y, result);
+                    outBitmapLock.SetPixel(x, y, result);
                 }
                 
             });
@@ -124,11 +120,12 @@ namespace SuperFilter
         
         public static void Main(string[] args)
         {
-            Bitmap im = (Bitmap) Image.FromFile("C:/IO/shrek_donkey_puss_cartoon_99537_3840x2160.jpg", false);
+            Bitmap im = (Bitmap) Image.FromFile("C:/IO/4b.png", false);
 
-            MedianFilter(im,1).Save("C:/IO/out_ss.jpg");
+            MedianFilter(im,5).Save("C:/IO/out_ss.jpg");
+            SuperFilter(im,3).Save("C:/IO/diploma.jpg");
             
-            Console.ReadKey();
+            //Console.ReadKey();
         }
     }
 }
