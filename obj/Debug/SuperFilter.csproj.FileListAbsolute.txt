@@ -10,3 +10,9 @@ C:\Users\User\RiderProjects\SuperFilter\bin\Debug\normnfkd.nlp
 C:\Users\User\RiderProjects\SuperFilter\obj\Debug\SuperFilter.csprojResolveAssemblyReference.cache
 C:\Users\User\RiderProjects\SuperFilter\obj\Debug\SuperFilter.exe
 C:\Users\User\RiderProjects\SuperFilter\obj\Debug\SuperFilter.pdb
+C:\Users\спасифрукт\RiderProjects\SuperFilter\bin\Debug\SuperFilter.exe
+C:\Users\спасифрукт\RiderProjects\SuperFilter\bin\Debug\SuperFilter.pdb
+C:\Users\спасифрукт\RiderProjects\SuperFilter\obj\Debug\SuperFilter.csprojResolveAssemblyReference.cache
+C:\Users\спасифрукт\RiderProjects\SuperFilter\obj\Debug\SuperFilter.csproj.CoreCompileInputs.cache
+C:\Users\спасифрукт\RiderProjects\SuperFilter\obj\Debug\SuperFilter.exe
+C:\Users\спасифрукт\RiderProjects\SuperFilter\obj\Debug\SuperFilter.pdb
