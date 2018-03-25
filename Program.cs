@@ -122,8 +122,9 @@ namespace SuperFilter
                             }
                         }
 
+                        h[x - left , y - up] = resultH;
                         double norm = 1 / (2 * resultH); //нормирование 
-                        //Console.WriteLine(norm);
+                        
                         for (int i = left; i <= right; i++)
                         {
                             for (int j = up; j <= down; j++)
@@ -143,9 +144,9 @@ namespace SuperFilter
                                 {
                                     for (int J = Y - up; J < N; J++)
                                     {
-                                        resultR += colors[I, J].R * h[I, J];
-                                        resultG += colors[I, J].G * h[I, J];
-                                        resultB += colors[I, J].B * h[I, J];
+                                        resultR += Math.Abs(colors[I, J].R * h[I, J]);
+                                        resultG += Math.Abs(colors[I, J].G * h[I, J]);
+                                        resultB += Math.Abs(colors[I, J].B * h[I, J]);
                                         Color result = Color.FromArgb(255, (int) resultR, (int) resultG, (int) resultB);
                                         outBitmapLock.SetPixel(X, Y, result);
                                     }
@@ -166,10 +167,10 @@ namespace SuperFilter
         
         public static void Main(string[] args)
         {
-            Bitmap im = (Bitmap) Image.FromFile("C:/IO/5b.png", false);
+            Bitmap im = (Bitmap) Image.FromFile("C:/IO/out_ss.jpg", false);
 
             //MedianFilter(im,5).Save("C:/IO/out_ss.jpg");
-            SuperFilter(im,1).Save("C:/IO/diploma2.jpg");
+            SuperFilter(im,1).Save("C:/IO/out_ss2.jpg");
         }
     }
 }
