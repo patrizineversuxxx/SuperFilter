@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Threading.Tasks;
 using BaldNeeeeeeeeeer;
+using System.Linq;
 
 public static class GaussianBlur
 {
@@ -19,45 +20,46 @@ public static class GaussianBlur
     public static Bitmap Processing(Bitmap inputImage)
     {
         BitmapLock input = new BitmapLock(inputImage, ImageLockMode.ReadOnly);
-        int N = 13;
+        int N = 17;
         int maskSize = N / 2;
         window = new double[maskSize];
 
         Bitmap outputImage = new Bitmap(input.Width, input.Height);
         BitmapLock output = new BitmapLock(outputImage, ImageLockMode.WriteOnly);
-        //double b = 0;
+        double b = 0;
         for (int i = 0; i < maskSize; i++)
         {
             window[i] = Math.Exp(-Math.Pow(i, 2) / (2 * Math.Pow(maskSize, 2)))
                 / Math.Sqrt(2 * Math.PI * Math.Pow(maskSize, 2));
 
-            //b += window[i];
+            b += window[i];
         }
-        //for (int i = 0; i < maskSize; i++)
-        //{
-        //    window[i] /= b;
-        //}
+        double kek = window[0];
+        for (int i = 0; i < maskSize; i++)
+        {
+            window[i] = window[i]/(b*4-2*kek);
+        }
 
         //for (int x = 0; x < input.Width; x++)
-        Parallel.For(0, input.Width -1 , x =>
+            Parallel.For(0, input.Width -1 , x =>
         {
             for (int y = 0; y < input.Height - 1; y++)
             {
 
                 if (x < maskSize || x > input.Width - maskSize || y < maskSize || y > input.Height - maskSize)
                 {
-                    try
-                    {
-                        output.SetPixel(x, y, input.GetPixel(x, y));
-                    }
-                    catch(Exception e)
-                    {
-                        Console.WriteLine("U'r fag! ");
-                    }
+                    //try
+                    //{
+                    //    output.SetPixel(x, y, input.GetPixel(x, y));
+                    //}
+                    //catch(Exception e)
+                    //{
+                    //    Console.WriteLine("U'r fag! ");
+                    //}
                 }
                 else
                 {
-                    Color result = Color.FromArgb(1, 0, 0, 0);
+                    Color result = Color.FromArgb(255, 0, 0, 0);
 
                     for (int i = -maskSize+1; i < maskSize; i++)
                     {
@@ -70,8 +72,6 @@ public static class GaussianBlur
                         Color cec = input.GetPixel(x, y + i);
                         result = result.Addition(cec.Multiply(getWindowValue(i)));
                     }
-
-                    result = result.Multiply(0.5);
 
                     output.SetPixel(x, y, result);
                 }
