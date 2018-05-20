@@ -23,26 +23,31 @@ namespace BaldNeeeeeeeeeer
             return result;
         }
 
-        public static double PSNR(Bitmap original, Bitmap processed)
+        public static double PSNR(Bitmap originalImage, Bitmap processedImage)
         {
-            BitmapLock originalBitmapLock = new BitmapLock(original, ImageLockMode.ReadOnly);
-            BitmapLock processedBitmapLock = new BitmapLock(processed, ImageLockMode.ReadOnly);
-
+            BitmapLock original = new BitmapLock(originalImage, ImageLockMode.ReadOnly);
+            BitmapLock processed = new BitmapLock(processedImage, ImageLockMode.ReadOnly);
             double[] result = { 0, 0, 0 };
-            Parallel.For(0, original.Width, i =>
+            Parallel.For(0, original.Width-1, i =>
             {
-                for (int j = 0; j < original.Height; j++)
+                for (int j = 0; j < original.Height-1; j++)
                 {
-                    result[0] += Math.Pow(originalBitmapLock.GetPixel(i, j).R - processedBitmapLock.GetPixel(i, j).R, 2);
-                    result[1] += Math.Pow(originalBitmapLock.GetPixel(i, j).G - processedBitmapLock.GetPixel(i, j).G, 2);
-                    result[2] += Math.Pow(originalBitmapLock.GetPixel(i, j).B - processedBitmapLock.GetPixel(i, j).B, 2);
+                    result[0] += Math.Pow(original.GetPixel(i, j).R - processed.GetPixel(i, j).R, 2);
+                    result[1] += Math.Pow(original.GetPixel(i, j).G - processed.GetPixel(i, j).G, 2);
+                    result[2] += Math.Pow(original.GetPixel(i, j).B - processed.GetPixel(i, j).B, 2);
                 }
             });
+
             result[0] = result[0] / (original.Width * original.Height);
             result[1] = result[1] / (original.Width * original.Height);
             result[2] = result[2] / (original.Width * original.Height);
+
             double MSE = max(result);
             double PSNR = 10 * Math.Log10(Math.Pow(255, 2) / MSE);
+
+            original.Unlock();
+            processed.Unlock();
+
             return PSNR;
         }
 
@@ -70,7 +75,7 @@ namespace BaldNeeeeeeeeeer
                                                               2 * Math.Cos(w * r) / (Math.Pow(r, 2) * w) -
                                                               2 * Math.Sin(w * r) / (Math.Pow(r, 3) * Math.Pow(w, 2)) +
                                                               (c * Math.Cos(w * r) - r * Math.Sin(w * r)) /
-                                                              (Math.Pow(c, 2) + Math.Pow(r, 2)));
+                                                              (Math.Pow(c, 2) + Math.Pow(r, 2)))/Math.PI;
                             }
                             b += h[i, j];
                         }
@@ -94,6 +99,7 @@ namespace BaldNeeeeeeeeeer
                         {
                             int I = x + i - N / 2;
                             int J = y + j - N / 2;
+
                             var color = inputBitmapLock.GetPixel(I, J);
 
 
@@ -106,7 +112,7 @@ namespace BaldNeeeeeeeeeer
                     outBitmapLock.SetPixel(x, y, Color.FromArgb(255, (byte)R, (byte)G, (byte)B));
                 }
             });
-
+            inputBitmapLock.Unlock();
             return outBitmapLock.Release();
         }
 

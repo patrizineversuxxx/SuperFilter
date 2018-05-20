@@ -40,6 +40,11 @@ namespace Graphics
             return _bitmap;
         }
 
+        public void Unlock()
+        {
+            _bitmap.UnlockBits(_bitmapData);
+        }
+
         public Color GetPixel(int x, int y)
         {
             int index = (y * _width + x) * _bytesPerPixel;

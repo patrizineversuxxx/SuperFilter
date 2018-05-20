@@ -20,7 +20,7 @@ public static class GaussianBlur
     public static Bitmap Processing(Bitmap inputImage)
     {
         BitmapLock input = new BitmapLock(inputImage, ImageLockMode.ReadOnly);
-        int N = 17;
+        int N = 13;
         int maskSize = N / 2;
         window = new double[maskSize];
 
@@ -30,7 +30,7 @@ public static class GaussianBlur
         for (int i = 0; i < maskSize; i++)
         {
             window[i] = Math.Exp(-Math.Pow(i, 2) / (2 * Math.Pow(maskSize, 2)))
-                / Math.Sqrt(2 * Math.PI * Math.Pow(maskSize, 2));
+                / Math.Sqrt(2 * Math.PI * Math.Pow(2, 2));
 
             b += window[i];
         }
@@ -40,22 +40,14 @@ public static class GaussianBlur
             window[i] = window[i]/(b*4-2*kek);
         }
 
-        //for (int x = 0; x < input.Width; x++)
-            Parallel.For(0, input.Width -1 , x =>
+        Parallel.For(0, input.Width -1 , x =>
         {
             for (int y = 0; y < input.Height - 1; y++)
             {
 
                 if (x < maskSize || x > input.Width - maskSize || y < maskSize || y > input.Height - maskSize)
                 {
-                    //try
-                    //{
-                    //    output.SetPixel(x, y, input.GetPixel(x, y));
-                    //}
-                    //catch(Exception e)
-                    //{
-                    //    Console.WriteLine("U'r fag! ");
-                    //}
+                    output.SetPixel(x, y, input.GetPixel(x, y));
                 }
                 else
                 {
