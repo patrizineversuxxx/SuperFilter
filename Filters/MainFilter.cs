@@ -28,21 +28,22 @@ namespace BaldNeeeeeeeeeer
             BitmapLock original = new BitmapLock(originalImage, ImageLockMode.ReadOnly);
             BitmapLock processed = new BitmapLock(processedImage, ImageLockMode.ReadOnly);
             double[] result = { 0, 0, 0 };
-            Parallel.For(0, original.Width-1, i =>
+            for(int i=0; i<original.Width;i++)
             {
-                for (int j = 0; j < original.Height-1; j++)
+                for (int j = 0; j < original.Height; j++)
                 {
                     result[0] += Math.Pow(original.GetPixel(i, j).R - processed.GetPixel(i, j).R, 2);
                     result[1] += Math.Pow(original.GetPixel(i, j).G - processed.GetPixel(i, j).G, 2);
                     result[2] += Math.Pow(original.GetPixel(i, j).B - processed.GetPixel(i, j).B, 2);
                 }
-            });
+            }
 
-            result[0] = result[0] / (original.Width * original.Height);
-            result[1] = result[1] / (original.Width * original.Height);
-            result[2] = result[2] / (original.Width * original.Height);
+            result[0] /= (original.Width * original.Height);
+            result[1] /= (original.Width * original.Height);
+            result[2] /= (original.Width * original.Height);
 
-            double MSE = max(result);
+            double MSE = Math.Sqrt((Math.Pow(result[0], 2) + Math.Pow(result[1], 2) + Math.Pow(result[2], 2))/3);
+            
             double PSNR = 10 * Math.Log10(Math.Pow(255, 2) / MSE);
 
             original.Unlock();
@@ -53,46 +54,49 @@ namespace BaldNeeeeeeeeeer
 
         public static Bitmap Processing(Bitmap input, int N, double c, double w)
         {
+            Bitmap output = new Bitmap(input);
             BitmapLock inputBitmapLock = new BitmapLock(input, ImageLockMode.ReadOnly);
-            Bitmap output = new Bitmap(input.Width, input.Height);
+            
             BitmapLock outBitmapLock = new BitmapLock(output, ImageLockMode.WriteOnly);
+
+            double[,] h = new double[N, N];
+            double[,] hn = new double[N, N];
+            double b = 0;
+
+            for (int i = 0; i < N; i++)
+            {
+                for (int j = 0; j < N; j++)
+                {
+                    double r = Math.Sqrt(Math.Pow(i - N / 2, 2) + Math.Pow(j - N / 2, 2));
+                    if (r > 0.5)
+                    {
+                        h[i, j] = Math.Exp(-c * w) * (Math.Sin(w * r) / r +
+                                                      2 * Math.Cos(w * r) / (Math.Pow(r, 2) * w) -
+                                                      2 * Math.Sin(w * r) / (Math.Pow(r, 3) * Math.Pow(w, 2)) +
+                                                      (c * Math.Cos(w * r) - r * Math.Sin(w * r)) /
+                                                      (Math.Pow(c, 2) + Math.Pow(r, 2))) / Math.PI;
+                        b += h[i, j];
+                    }
+
+                }
+            }
+
+            h[N / 2, N / 2] = b;
+
+            double n = 1 / (2 * b);
+            for (int i = 0; i < N; i++)
+            {
+                for (int j = 0; j < N; j++)
+                {
+                    hn[i, j] = n * h[i, j];
+                }
+            }
+
             Parallel.For(N / 2, inputBitmapLock.Width - N / 2, x =>
             {
                 for (int y = N / 2; y < inputBitmapLock.Height - N / 2; y++)
                 {
-                    double[,] h = new double[N, N];
-                    double[,] hn = new double[N, N];
-                    double b = 0;
-
-                    for (int i = 0; i < N; i++)
-                    {
-                        for (int j = 0; j < N; j++)
-                        {
-                            double r = Math.Sqrt(Math.Pow(i - N / 2, 2) + Math.Pow(j - N / 2, 2));
-                            if (r > 0.5)
-                            {
-                                h[i, j] = Math.Exp(-c * w) * (Math.Sin(w * r) / r +
-                                                              2 * Math.Cos(w * r) / (Math.Pow(r, 2) * w) -
-                                                              2 * Math.Sin(w * r) / (Math.Pow(r, 3) * Math.Pow(w, 2)) +
-                                                              (c * Math.Cos(w * r) - r * Math.Sin(w * r)) /
-                                                              (Math.Pow(c, 2) + Math.Pow(r, 2)))/Math.PI;
-                            }
-                            b += h[i, j];
-                        }
-                    }
-
-                    h[N / 2, N / 2] = b;
-
-                    double n = 1 / (2 * b);
-                    for (int i = 0; i < N; i++)
-                    {
-                        for (int j = 0; j < N; j++)
-                        {
-                            hn[i, j] = n * h[i, j];
-                        }
-                    }
-
-                    int R = 0, G = 0, B = 0;
+                    double R = 0, G = 0, B = 0;
                     for (int i = 0; i < N; i++)
                     {
                         for (int j = 0; j < N; j++)
@@ -100,16 +104,15 @@ namespace BaldNeeeeeeeeeer
                             int I = x + i - N / 2;
                             int J = y + j - N / 2;
 
-                            var color = inputBitmapLock.GetPixel(I, J);
+                            Color color = inputBitmapLock.GetPixel(I, J);
 
-
-                            R += (int)(color.R * hn[i, j]);
-                            G += (int)(color.G * hn[i, j]);
-                            B += (int)(color.B * hn[i, j]);
+                            R += (color.R * hn[i, j]);
+                            G += (color.G * hn[i, j]);
+                            B += (color.B * hn[i, j]);
                         }
                     }
 
-                    outBitmapLock.SetPixel(x, y, Color.FromArgb(255, (byte)R, (byte)G, (byte)B));
+                    outBitmapLock.SetPixel(x, y, Color.FromArgb(255, (byte)R, ((byte)R), ((byte)R)));
                 }
             });
             inputBitmapLock.Unlock();

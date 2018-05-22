@@ -12,30 +12,34 @@ namespace BaldNeeeeeeeeeer
     {
         public static Bitmap FilterTuning( Bitmap original, Bitmap blurred, int N)
         {
-            double c = 1;
+            double c = 7.95;
             double w = 0.1;
             double prev = 0, cur = 0;
             double result_w = 0;
             double result_c=0;
+            Bitmap kek;
             while (w <= 3)
             {
-                c = 1;
-                while (c < 9)
-                {
-                    cur = MainFilter.PSNR(MainFilter.Processing(blurred, N, c, w), original);
+                //c = 5;
+                //while (c < 9)
+                //{
+                    kek = MainFilter.Processing(blurred, N, c, w);
+                    cur = MainFilter.PSNR(kek, original);
                     if (prev < cur)
                     {
                         prev = cur;
                         result_c = c;
                         result_w = w;
                         
-                        
                         Console.WriteLine(w + "  " + result_w + "c =" + c);
                     }
 
-                    c += 1;
-                }
-                w += 0.1;
+                    //c += 1;
+                    //string result = "C:/IO/IO/IO/IO/" + w + " " + c + ".png";
+                    //kek.Save(result);
+                //}
+                w += 0.025;
+
             }
             
             Console.WriteLine(result_w + "  " + result_c + " || "+ prev + "   " + cur);
